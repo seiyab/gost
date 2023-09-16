@@ -1,18 +1,12 @@
 package main
 
 import (
-	"golang.org/x/tools/go/analysis"
-	"golang.org/x/tools/go/analysis/singlechecker"
+	"github.com/seiyab/gost/gost/openfileflag"
+	"golang.org/x/tools/go/analysis/multichecker"
 )
 
-var Analyzer = &analysis.Analyzer{
-	Name: "temp",
-	Doc:  "just for test",
-	Run: func(pass *analysis.Pass) (interface{}, error) {
-		return nil, nil
-	},
-}
-
 func main() {
-	singlechecker.Main(Analyzer)
+	multichecker.Main(
+		openfileflag.Analyzer,
+	)
 }
