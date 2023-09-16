@@ -1,0 +1,6 @@
+[submodule "meddlesome/gin"]
+	path = meddlesome/objectives/gin
+	url = git@github.com:gin-gonic/gin.git
+[submodule "meddlesome/cli"]
+	path = meddlesome/objectives/cli
+	url = git@github.com:cli/cli.git
