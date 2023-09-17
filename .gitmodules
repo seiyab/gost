@@ -4,3 +4,9 @@
 [submodule "meddlesome/cli"]
 	path = meddlesome/objectives/cli
 	url = git@github.com:cli/cli.git
+[submodule "meddlesome/objectives/--force"]
+	path = meddlesome/objectives/--force
+	url = git@github.com:evanw/esbuild.git
+[submodule "meddlesome/objectives/esbuild"]
+	path = meddlesome/objectives/esbuild
+	url = git@github.com:evanw/esbuild.git
