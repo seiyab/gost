@@ -4,29 +4,20 @@ import (
 	"go/ast"
 	"go/token"
 
+	"github.com/seiyab/gost/gost/astpath"
 	"golang.org/x/tools/go/analysis"
-	"golang.org/x/tools/go/analysis/passes/inspect"
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name:     "nodiscarderror",
-	Doc:      "prevents `if err != nil { return nil }`",
-	Run:      run,
-	Requires: []*analysis.Analyzer{inspect.Analyzer},
+	Name: "nodiscarderror",
+	Doc:  "prevents `if err != nil { return nil }`",
+	Run:  run,
 }
 
 func run(pass *analysis.Pass) (any, error) {
 	ti := pass.TypesInfo
 	for _, file := range pass.Files {
-		var stack Stack[ast.Node]
-		ast.Inspect(file, func(n ast.Node) bool {
-			if n == nil {
-				stack.Pop()
-				return true
-			} else {
-				stack.Push(n)
-			}
-
+		ast.Inspect(file, astpath.WithPath(func(n ast.Node, path *astpath.Path) bool {
 			ifStmt, ok := n.(*ast.IfStmt)
 			if !ok {
 				return true
@@ -53,7 +44,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if !ok {
 				return true
 			}
-			fn := enclosingFunction(stack)
+			fn, _ := astpath.FindNearest[*ast.FuncDecl](path)
 			if fn == nil {
 				return true
 			}
@@ -80,37 +71,7 @@ func run(pass *analysis.Pass) (any, error) {
 				}
 			}
 			return true
-		})
+		}))
 	}
 	return nil, nil
-}
-
-func enclosingFunction(stack Stack[ast.Node]) *ast.FuncDecl {
-	if fn, ok := stack.Top.(*ast.FuncDecl); ok {
-		return fn
-	}
-	if stack.Next == nil {
-		return nil
-	}
-	return enclosingFunction(*stack.Next)
-}
-
-type Stack[T any] struct {
-	Top  T
-	Next *Stack[T]
-}
-
-func (s *Stack[T]) Push(v T) {
-	n := *s
-	s.Top, s.Next = v, &n
-}
-
-func (s *Stack[T]) Pop() (T, bool) {
-	if s == nil {
-		var v T
-		return v, false
-	}
-	ret := s.Top
-	s.Top, s.Next = s.Next.Top, s.Next.Next
-	return ret, true
 }
