@@ -10,3 +10,9 @@
 [submodule "meddlesome/objectives/esbuild"]
 	path = meddlesome/objectives/esbuild
 	url = git@github.com:evanw/esbuild.git
+[submodule "meddlesome/objectives/sqlc"]
+	path = meddlesome/objectives/sqlc
+	url = git@github.com:sqlc-dev/sqlc.git
+[submodule "meddlesome/objectives/jwt"]
+	path = meddlesome/objectives/jwt
+	url = git@github.com:golang-jwt/jwt.git
