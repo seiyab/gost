@@ -27,6 +27,4 @@ jobs:
 
     - name: Test
       working-directory: ./gost
-      run: |
-        export GOPROXY=https://proxy.golang.org,direct
-        go test -v ./...
+      run: go test -v ./...
