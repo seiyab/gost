@@ -1,0 +1,10 @@
+# github.com/cli/cli/v2/pkg/cmd/extension
+pkg/cmd/extension/manager.go:379:12: O_TRUNC / O_APPEND / O_EXCL flags are not specified
+pkg/cmd/extension/manager_test.go:1161:11: O_TRUNC / O_APPEND / O_EXCL flags are not specified
+pkg/cmd/extension/manager_test.go:1185:12: O_TRUNC / O_APPEND / O_EXCL flags are not specified
+# github.com/cli/cli/v2/pkg/cmd/gpg-key/delete
+pkg/cmd/gpg-key/delete/delete.go:94:3: error is discarded
+# github.com/cli/cli/v2/pkg/cmd/pr/shared
+pkg/cmd/pr/shared/templates.go:258:4: error is discarded
+# github.com/cli/cli/v2/pkg/cmd/run/watch
+pkg/cmd/run/watch/watch.go:176:3: error is discarded
