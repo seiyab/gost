@@ -11,6 +11,12 @@ cd -- "$SCRIPT_DIR"
 for MODULE in $(ls "$SCRIPT_DIR/objectives")
 do
   cd -- "$SCRIPT_DIR/objectives/$MODULE"
+  go mod download
+done
+
+for MODULE in $(ls "$SCRIPT_DIR/objectives")
+do
+  cd -- "$SCRIPT_DIR/objectives/$MODULE"
   REPORT="$(go vet -vettool="$(which gost)" ./... 2>&1 || true)"
   echo "---- module $MODULE ----"
   echo "$REPORT"
