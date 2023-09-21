@@ -1,0 +1,2 @@
+# github.com/peco/peco
+./input.go:29:5: error is discarded
