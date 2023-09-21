@@ -13,3 +13,6 @@
 [submodule "meddlesome/objectives/jwt"]
 	path = meddlesome/objectives/jwt
 	url = git@github.com:golang-jwt/jwt.git
+[submodule "meddlesome/objectives/peco"]
+	path = meddlesome/objectives/peco
+	url = git@github.com:peco/peco.git
