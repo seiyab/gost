@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 
+	"github.com/seiyab/gost/gost/astpath"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -15,7 +16,7 @@ var Analyzer = &analysis.Analyzer{
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
-		ast.Inspect(file, func(n ast.Node) bool {
+		ast.Inspect(file, astpath.WithPath(func(n ast.Node, path *astpath.Path) bool {
 			call, ok := n.(*ast.CallExpr)
 			if !ok {
 				return true
@@ -31,6 +32,13 @@ func run(pass *analysis.Pass) (any, error) {
 			if slct.Sel.Name != "OpenFile" || obj.Name != "os" {
 				return true
 			}
+			if path.Parent != nil {
+				if fileDiscarded(path.Parent.Current) {
+					// This is considered as "touch" operation.
+					// No need to check flags.
+					return true
+				}
+			}
 			if len(call.Args) != 3 {
 				return true
 			}
@@ -45,7 +53,7 @@ func run(pass *analysis.Pass) (any, error) {
 				pass.Reportf(call.Pos(), "O_TRUNC / O_APPEND / O_EXCL flags are not specified")
 			}
 			return true
-		})
+		}))
 	}
 	return nil, nil
 }
@@ -90,4 +98,19 @@ func (f FileFlags) Has(flag string) bool {
 		}
 	}
 	return false
+}
+
+func fileDiscarded(node ast.Node) bool {
+	p, ok := node.(*ast.AssignStmt)
+	if !ok {
+		return false
+	}
+	if len(p.Lhs) != 2 {
+		return false
+	}
+	f, ok := p.Lhs[0].(*ast.Ident)
+	if !ok {
+		return false
+	}
+	return f.Name == "_"
 }
