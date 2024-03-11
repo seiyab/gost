@@ -32,8 +32,51 @@ func Shadow(b bool) {
 }
 
 func Delegated() {
-	f, _ := os.Open("a")
-	takeReadCloser(f)
+	f1, _ := os.Open("a")
+	takeReadCloser(f1)
+
+	f12, _ := os.Open("b")
+	f13, _ := os.Open("b") // want ".+"
+	f14, _ := os.Open("b")
+	f15, _ := os.Open("b")
+
+	o := st{
+		c:  f12,
+		r:  f13,
+		rc: f14,
+		f:  f15,
+	}
+
+	markAsUsed(o)
+
+	f22, _ := os.Open("c")
+	f23, _ := os.Open("c") // want ".+"
+	f24, _ := os.Open("c")
+	f25, _ := os.Open("c")
+
+	o = st{f22, f23, f24, f25}
+
+	markAsUsed(o)
+
+	o = st{}
+	f32, _ := os.Open("d")
+	f33, _ := os.Open("d") // want ".+"
+	f34, _ := os.Open("d")
+	f35, _ := os.Open("d")
+
+	o.c = f32
+	o.r = f33
+	o.rc = f34
+	o.f = f35
+
+	markAsUsed(o)
+}
+
+type st struct {
+	c  io.Closer
+	r  io.Reader
+	rc io.ReadCloser
+	f  *os.File
 }
 
 func markAsUsed(_ ...any) {}

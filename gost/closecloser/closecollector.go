@@ -5,6 +5,7 @@ import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/ast/inspector"
 )
 
 type closeCollector struct {
@@ -13,10 +14,36 @@ type closeCollector struct {
 }
 
 func newCloseCollector(pass *analysis.Pass) *closeCollector {
-	return &closeCollector{
+	c := &closeCollector{
 		pass:  pass,
 		calls: make(map[types.Object]struct{}),
 	}
+	c.trace()
+	return c
+}
+
+func (c *closeCollector) trace() {
+	ipr := inspector.New(c.pass.Files)
+	ipr.WithStack(
+		[]ast.Node{
+			&ast.CallExpr{},
+			&ast.CompositeLit{},
+			&ast.AssignStmt{},
+		},
+		func(n ast.Node, push bool, stack []ast.Node) bool {
+			switch n := n.(type) {
+			case *ast.CallExpr:
+				c.traceCloseCall(n)
+				c.traceCloserArg(n)
+			case *ast.CompositeLit:
+				c.traceCompositeLiteral(n)
+			case *ast.AssignStmt:
+				c.traceAssignment(n)
+			}
+
+			return true
+		},
+	)
 }
 
 func (c *closeCollector) Visit(node ast.Node) ast.Visitor {
@@ -24,6 +51,10 @@ func (c *closeCollector) Visit(node ast.Node) ast.Visitor {
 	case *ast.CallExpr:
 		c.traceCloseCall(node)
 		c.traceCloserArg(node)
+	case *ast.CompositeLit:
+		c.traceCompositeLiteral(node)
+	case *ast.AssignStmt:
+		c.traceAssignment(node)
 	}
 	return c
 }
@@ -68,7 +99,58 @@ func (c *closeCollector) traceCloserArg(call *ast.CallExpr) {
 			continue
 		}
 		c.storeIdent(id)
+	}
+}
 
+func (c *closeCollector) traceCompositeLiteral(lit *ast.CompositeLit) {
+	lt := c.pass.TypesInfo.TypeOf(lit)
+	if lt != nil {
+		lt = lt.Underlying()
+	}
+	for i, e := range lit.Elts {
+		switch e := e.(type) {
+		case *ast.KeyValueExpr:
+			id, ok := e.Value.(*ast.Ident)
+			if !ok {
+				continue
+			}
+			kt := c.pass.TypesInfo.TypeOf(e.Key)
+			if kt == nil || !implementsCloser(kt) {
+				continue
+			}
+			c.storeIdent(id)
+		case *ast.Ident:
+			switch lt := lt.(type) {
+			case *types.Struct:
+				if i >= lt.NumFields() {
+					continue
+				}
+				if !implementsCloser(lt.Field(i).Type()) {
+					continue
+				}
+				c.storeIdent(e)
+			}
+		default:
+			continue
+		}
+	}
+}
+
+func (c *closeCollector) traceAssignment(asm *ast.AssignStmt) {
+	for i, rh := range asm.Rhs {
+		id, ok := rh.(*ast.Ident)
+		if !ok {
+			continue
+		}
+		if i >= len(asm.Lhs) {
+			continue
+		}
+		lh := asm.Lhs[i]
+		lt := c.pass.TypesInfo.TypeOf(lh)
+		if !implementsCloser(lt) {
+			continue
+		}
+		c.storeIdent(id)
 	}
 }
 

@@ -10,17 +10,16 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "openfileflag",
-	Doc:  "prevents forgetting to specify O_TRUNC / O_APPEND / O_EXCL flags",
+	Name: "closecloser",
+	Doc:  "report unclosed variables that implement io.Closer",
 	Run:  run,
 }
 
 func run(pass *analysis.Pass) (any, error) {
 	ti := pass.TypesInfo
-	for _, file := range pass.Files {
-		c := newCloseCollector(pass)
-		ast.Walk(c, file)
+	c := newCloseCollector(pass)
 
+	for _, file := range pass.Files {
 		ast.Inspect(file, astpath.WithPath(func(n ast.Node, path *astpath.Path) bool {
 			var ids []*ast.Ident
 			switch n := n.(type) {
