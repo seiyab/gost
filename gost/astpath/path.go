@@ -2,6 +2,16 @@ package astpath
 
 import "go/ast"
 
+func Nearest[T ast.Node](stack []ast.Node) T {
+	for i := len(stack) - 1; i >= 0; i-- {
+		if x, ok := stack[i].(T); ok {
+			return x
+		}
+	}
+	var zero T
+	return zero
+}
+
 type Path struct {
 	Current ast.Node
 	Parent  *Path

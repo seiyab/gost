@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/types"
 
+	"github.com/seiyab/gost/gost/astpath"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/ast/inspector"
 )
@@ -29,6 +30,7 @@ func (c *closeCollector) trace() {
 			&ast.CallExpr{},
 			&ast.CompositeLit{},
 			&ast.AssignStmt{},
+			&ast.ReturnStmt{},
 		},
 		func(n ast.Node, push bool, stack []ast.Node) bool {
 			switch n := n.(type) {
@@ -39,24 +41,13 @@ func (c *closeCollector) trace() {
 				c.traceCompositeLiteral(n)
 			case *ast.AssignStmt:
 				c.traceAssignment(n)
+			case *ast.ReturnStmt:
+				c.traceReturn(n, stack)
 			}
 
 			return true
 		},
 	)
-}
-
-func (c *closeCollector) Visit(node ast.Node) ast.Visitor {
-	switch node := node.(type) {
-	case *ast.CallExpr:
-		c.traceCloseCall(node)
-		c.traceCloserArg(node)
-	case *ast.CompositeLit:
-		c.traceCompositeLiteral(node)
-	case *ast.AssignStmt:
-		c.traceAssignment(node)
-	}
-	return c
 }
 
 func (c *closeCollector) traceCloseCall(call *ast.CallExpr) {
@@ -152,6 +143,43 @@ func (c *closeCollector) traceAssignment(asm *ast.AssignStmt) {
 		}
 		c.storeIdent(id)
 	}
+}
+
+func (c *closeCollector) traceReturn(asm *ast.ReturnStmt, stack []ast.Node) {
+	var rts []types.Type
+	if fn := astpath.Nearest[*ast.FuncDecl](stack); fn != nil {
+		rts = c.returnTypesOf(fn)
+	} else if fn := astpath.Nearest[*ast.FuncLit](stack); fn != nil {
+		rts = c.returnTypesOf(fn)
+	}
+	for i, r := range asm.Results {
+		id, ok := r.(*ast.Ident)
+		if !ok {
+			continue
+		}
+		if i >= len(rts) {
+			continue
+		}
+		if !implementsCloser(rts[i]) {
+			continue
+		}
+		c.storeIdent(id)
+	}
+}
+
+func (c *closeCollector) returnTypesOf(fn ast.Node) []types.Type {
+	var fl []*ast.Field
+	switch fn := fn.(type) {
+	case *ast.FuncDecl:
+		fl = fn.Type.Results.List
+	case *ast.FuncLit:
+		fl = fn.Type.Results.List
+	}
+	var tys []types.Type
+	for _, f := range fl {
+		tys = append(tys, c.pass.TypesInfo.TypeOf(f.Type))
+	}
+	return tys
 }
 
 func (c *closeCollector) storeIdent(x *ast.Ident) {
