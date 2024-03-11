@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/seiyab/gost/gost/closecloser"
 	"github.com/seiyab/gost/gost/multipleerrors"
 	"github.com/seiyab/gost/gost/nodiscarderror"
 	"github.com/seiyab/gost/gost/openfileflag"
@@ -14,5 +15,6 @@ func main() {
 		nodiscarderror.Analyzer,
 		multipleerrors.Analyzer,
 		wraperror.Analyzer,
+		closecloser.Analyzer,
 	)
 }
