@@ -16,23 +16,29 @@ func A() {
 
 	c1 := closer() // want ".+"
 
-	markAsUsed(f1, c1)
+	var a io.Closer // want ".+"
+
+	markAsUsed(f1, c1, a)
 }
 
-func C(b bool) {
-	f2, _ := os.Open("b")
-	defer f2.Close()
+func Shadow(b bool) {
+	f, _ := os.Open("b") // want ".+"
 
-	if b {
-		f2 = nil
+	if f, err := os.Open("a"); err == nil {
+		f.Close()
 	}
 
-	c1 := closer() // want ".+"
+	markAsUsed(f)
+}
 
-	markAsUsed(c1, f2)
+func Delegated() {
+	f, _ := os.Open("a")
+	takeReadCloser(f)
 }
 
 func markAsUsed(_ ...any) {}
+
+func takeReadCloser(r io.ReadCloser) {}
 
 func closer() io.Closer {
 	return nil

@@ -22,14 +22,25 @@ func run(pass *analysis.Pass) (any, error) {
 		ast.Walk(c, file)
 
 		ast.Inspect(file, astpath.WithPath(func(n ast.Node, path *astpath.Path) bool {
-			assignment, ok := n.(*ast.AssignStmt)
-			if !ok || assignment.Tok != token.DEFINE {
+			var ids []*ast.Ident
+			switch n := n.(type) {
+			case *ast.AssignStmt:
+				if n.Tok != token.DEFINE {
+					return true
+				}
+				for _, ex := range n.Lhs {
+					if id, ok := ex.(*ast.Ident); ok {
+						ids = append(ids, id)
+					}
+				}
+			case *ast.ValueSpec:
+				ids = n.Names
+			default:
 				return true
 			}
-			for _, decl := range assignment.Lhs {
-				dt := ti.TypeOf(decl)
-				id, ok := decl.(*ast.Ident)
-				if !ok || id.Name == "_" {
+			for _, id := range ids {
+				dt := ti.TypeOf(id)
+				if id.Name == "_" {
 					continue
 				}
 				if !implementsCloser(dt) {
@@ -40,7 +51,7 @@ func run(pass *analysis.Pass) (any, error) {
 				if c.isClosed(o) {
 					continue
 				}
-				pass.Reportf(decl.Pos(), "variable %s is not closed", decl)
+				pass.Reportf(id.Pos(), "variable %s is not closed", id.Name)
 			}
 
 			return true
