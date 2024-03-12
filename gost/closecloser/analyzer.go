@@ -27,6 +27,9 @@ func run(pass *analysis.Pass) (any, error) {
 				if n.Tok != token.DEFINE {
 					return true
 				}
+				if len(n.Rhs) == 1 && shouldAllowUnclosed(n.Rhs[0], pass) {
+					return true
+				}
 				for _, ex := range n.Lhs {
 					if id, ok := ex.(*ast.Ident); ok {
 						ids = append(ids, id)

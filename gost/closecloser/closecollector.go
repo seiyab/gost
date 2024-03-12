@@ -168,15 +168,18 @@ func (c *closeCollector) traceReturn(asm *ast.ReturnStmt, stack []ast.Node) {
 }
 
 func (c *closeCollector) returnTypesOf(fn ast.Node) []types.Type {
-	var fl []*ast.Field
+	var ft *ast.FuncType
 	switch fn := fn.(type) {
 	case *ast.FuncDecl:
-		fl = fn.Type.Results.List
+		ft = fn.Type
 	case *ast.FuncLit:
-		fl = fn.Type.Results.List
+		ft = fn.Type
+	}
+	if ft.Results == nil {
+		return nil
 	}
 	var tys []types.Type
-	for _, f := range fl {
+	for _, f := range ft.Results.List {
 		tys = append(tys, c.pass.TypesInfo.TypeOf(f.Type))
 	}
 	return tys
