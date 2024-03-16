@@ -5,6 +5,7 @@ import (
 	"go/token"
 
 	"github.com/seiyab/gost/gost/astpath"
+	"github.com/seiyab/gost/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -29,7 +30,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if binExpr.Op != token.NEQ {
 				return true
 			}
-			if ti.TypeOf(binExpr.X).String() != "error" {
+			if !utils.IsError(ti.TypeOf(binExpr.X)) {
 				return true
 			}
 			y, ok := ti.Types[binExpr.Y]
@@ -57,8 +58,7 @@ func run(pass *analysis.Pass) (any, error) {
 				return true
 			}
 			for i, result := range ret.Results {
-				t := ti.TypeOf(retTypes[i].Type)
-				if t.String() != "error" {
+				if !utils.IsError(ti.TypeOf(retTypes[i].Type)) {
 					continue
 				}
 				res, ok := ti.Types[result]

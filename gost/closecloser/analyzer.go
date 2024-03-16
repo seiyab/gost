@@ -6,6 +6,7 @@ import (
 	"go/types"
 
 	"github.com/seiyab/gost/gost/astpath"
+	"github.com/seiyab/gost/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -110,7 +111,7 @@ func methoderImplementsCloser(ifc methoder) bool {
 		return false
 	}
 	ret := sgn.Results().At(0)
-	return ret.Type().String() == "error"
+	return utils.IsError(ret.Type())
 }
 
 type methoder interface {
