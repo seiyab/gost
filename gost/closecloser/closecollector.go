@@ -71,6 +71,9 @@ func (c *closeCollector) traceCloseCall(call *ast.CallExpr) {
 
 func (c *closeCollector) traceCloserArg(call *ast.CallExpr) {
 	ftt := c.pass.TypesInfo.TypeOf(call.Fun)
+	if ftt == nil {
+		return
+	}
 	sig, ok := ftt.Underlying().(*types.Signature)
 	if !ok {
 		return
