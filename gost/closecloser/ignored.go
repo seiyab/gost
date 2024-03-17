@@ -9,7 +9,7 @@ import (
 
 func shouldAllowUnclosed(expr ast.Expr, pass *analysis.Pass) bool {
 	switch expr := expr.(type) {
-	case *ast.SelectorExpr:
+	case *ast.SelectorExpr, *ast.Ident:
 		return true
 	case *ast.CallExpr:
 		return isAllowedCall(expr, pass)

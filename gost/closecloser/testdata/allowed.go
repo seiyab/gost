@@ -2,6 +2,7 @@ package testdata
 
 import (
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 )
@@ -40,4 +41,9 @@ func (o o) alias() {
 func _() {
 	var o o
 	markAsUsed(o, o.alias)
+}
+
+func _(f fs.File) {
+	ff, _ := f.(fs.ReadDirFile)
+	markAsUsed(ff)
 }
