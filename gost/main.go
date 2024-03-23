@@ -5,6 +5,7 @@ import (
 	"github.com/seiyab/gost/gost/multipleerrors"
 	"github.com/seiyab/gost/gost/nodiscarderror"
 	"github.com/seiyab/gost/gost/openfileflag"
+	"github.com/seiyab/gost/gost/preferfilepath"
 	"github.com/seiyab/gost/gost/wraperror"
 	"golang.org/x/tools/go/analysis/multichecker"
 )
@@ -16,5 +17,6 @@ func main() {
 		multipleerrors.Analyzer,
 		wraperror.Analyzer,
 		closecloser.Analyzer,
+		preferfilepath.Analyzer,
 	)
 }
