@@ -2,8 +2,8 @@ package preferfilepath
 
 import (
 	"github.com/pkg/errors"
-	"github.com/seiyab/gost/gost/utils"
-	"github.com/seiyab/gost/gost/utils/graph"
+	"github.com/seiyab/gost/utils"
+	"github.com/seiyab/gost/utils/graph"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/buildssa"
 	"golang.org/x/tools/go/ssa"

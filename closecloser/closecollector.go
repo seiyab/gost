@@ -4,7 +4,8 @@ import (
 	"go/ast"
 	"go/types"
 
-	"github.com/seiyab/gost/gost/astpath"
+	"github.com/seiyab/gost/astpath"
+	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/ast/inspector"
 )
@@ -54,8 +55,7 @@ func (c *closeCollector) traceCloseCall(call *ast.CallExpr) {
 	if len(call.Args) != 0 {
 		return
 	}
-	ti, ok := c.pass.TypesInfo.Types[call]
-	if !ok || ti.Type.String() != "error" {
+	if !utils.IsError(c.pass.TypesInfo.TypeOf(call)) {
 		return
 	}
 	sel, ok := call.Fun.(*ast.SelectorExpr)

@@ -3,6 +3,7 @@ package wraperror
 import (
 	"go/ast"
 
+	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -19,11 +20,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if !ok {
 				return true
 			}
-			sel, ok := call.Fun.(*ast.SelectorExpr)
-			if !ok {
-				return true
-			}
-			if !isWrapLike(sel) {
+			if !isWrapLike(pass, call) {
 				return true
 			}
 			if len(call.Args) < 1 { // can't be
@@ -43,20 +40,17 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-func isWrapLike(sel *ast.SelectorExpr) bool {
-	patterns := [][]string{
-		{"errors", "WithMessage"},
-		{"errors", "WithMessagef"},
-		{"errors", "WithStack"},
-		{"errors", "Wrap"},
-		{"errors", "Wrapf"},
-	}
-	x, ok := sel.X.(*ast.Ident)
-	if !ok {
-		return false
-	}
-	for _, pattern := range patterns {
-		if x.Name == pattern[0] && sel.Sel.Name == pattern[1] {
+var wrapLikes = []utils.PkgFuncCallMatcher{
+	utils.NewPkgFuncCallMatcher("github.com/pkg/errors", "WithMessage"),
+	utils.NewPkgFuncCallMatcher("github.com/pkg/errors", "WithMessagef"),
+	utils.NewPkgFuncCallMatcher("github.com/pkg/errors", "WithStack"),
+	utils.NewPkgFuncCallMatcher("github.com/pkg/errors", "Wrap"),
+	utils.NewPkgFuncCallMatcher("github.com/pkg/errors", "Wrapf"),
+}
+
+func isWrapLike(pass *analysis.Pass, call *ast.CallExpr) bool {
+	for _, matcher := range wrapLikes {
+		if matcher.Matches(pass, call) {
 			return true
 		}
 	}
