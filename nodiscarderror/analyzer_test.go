@@ -1,14 +1,14 @@
-package preferfilepath_test
+package nodiscarderror_test
 
 import (
 	"testing"
 
 	"golang.org/x/tools/go/analysis/analysistest"
 
-	"github.com/seiyab/gost/gost/preferfilepath"
+	"github.com/seiyab/gost/nodiscarderror"
 )
 
 func TestOpenFileFlag(t *testing.T) {
 	testdata := analysistest.TestData()
-	analysistest.Run(t, testdata, preferfilepath.Analyzer)
+	analysistest.Run(t, testdata, nodiscarderror.Analyzer)
 }

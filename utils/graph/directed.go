@@ -1,6 +1,6 @@
 package graph
 
-import "github.com/seiyab/gost/gost/utils"
+import "github.com/seiyab/gost/utils"
 
 type Directed[T comparable] struct {
 	Nodes utils.Set[T]

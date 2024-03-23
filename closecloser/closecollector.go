@@ -4,7 +4,7 @@ import (
 	"go/ast"
 	"go/types"
 
-	"github.com/seiyab/gost/gost/astpath"
+	"github.com/seiyab/gost/astpath"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/ast/inspector"
 )

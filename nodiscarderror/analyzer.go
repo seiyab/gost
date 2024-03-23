@@ -4,8 +4,8 @@ import (
 	"go/ast"
 	"go/token"
 
-	"github.com/seiyab/gost/gost/astpath"
-	"github.com/seiyab/gost/gost/utils"
+	"github.com/seiyab/gost/astpath"
+	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 

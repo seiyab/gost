@@ -1,4 +1,4 @@
-module github.com/seiyab/gost/gost
+module github.com/seiyab/gost
 
 go 1.21
 

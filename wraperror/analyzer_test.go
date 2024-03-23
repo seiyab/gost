@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/tools/go/analysis/analysistest"
 
-	"github.com/seiyab/gost/gost/wraperror"
+	"github.com/seiyab/gost/wraperror"
 )
 
 func TestWrapError(t *testing.T) {

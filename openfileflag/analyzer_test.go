@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/tools/go/analysis/analysistest"
 
-	"github.com/seiyab/gost/gost/openfileflag"
+	"github.com/seiyab/gost/openfileflag"
 )
 
 func TestOpenFileFlag(t *testing.T) {
