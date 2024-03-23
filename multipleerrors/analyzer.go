@@ -5,6 +5,7 @@ import (
 	"go/token"
 
 	"github.com/seiyab/gost/astpath"
+	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -21,11 +22,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if !ok {
 				return true
 			}
-			sel, ok := call.Fun.(*ast.SelectorExpr)
-			if !ok {
-				return true
-			}
-			if !isJoinLike(sel) {
+			if !isJoinLike(pass, call) {
 				return true
 			}
 			if len(call.Args) < 2 && call.Ellipsis == token.NoPos {
@@ -47,18 +44,15 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-func isJoinLike(sel *ast.SelectorExpr) bool {
-	var patterns = [][]string{
-		{"errors", "Join"},
-		{"multierror", "Append"},
-		{"multierr", "Append"},
-	}
-	x, ok := sel.X.(*ast.Ident)
-	if !ok {
-		return false
-	}
-	for _, pattern := range patterns {
-		if x.Name == pattern[0] && sel.Sel.Name == pattern[1] {
+var joinLikes = []utils.PkgFuncCallMatcher{
+	utils.NewPkgFuncCallMatcher("errors", "Join"),
+	utils.NewPkgFuncCallMatcher("github.com/hashicorp/go-multierror", "Append"),
+	utils.NewPkgFuncCallMatcher("github.com/uber-go/multierr ", "Append"),
+}
+
+func isJoinLike(pass *analysis.Pass, call *ast.CallExpr) bool {
+	for _, matcher := range joinLikes {
+		if matcher.Matches(pass, call) {
 			return true
 		}
 	}
