@@ -1,53 +1,79 @@
 package preferfilepath
 
 import (
-	"fmt"
-	"go/ast"
-
+	"github.com/pkg/errors"
 	"github.com/seiyab/gost/gost/utils"
+	"github.com/seiyab/gost/gost/utils/graph"
 	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/analysis/passes/buildssa"
+	"golang.org/x/tools/go/ssa"
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "preferfilepath",
-	Doc:  "warn when using path where path/filepath should be suitable",
-	Run:  run,
+	Name:     "preferfilepath",
+	Doc:      "warn when using path where path/filepath should be suitable",
+	Run:      run,
+	Requires: []*analysis.Analyzer{buildssa.Analyzer},
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	for _, file := range pass.Files {
-		ast.Inspect(file, func(n ast.Node) bool {
-			call, ok := n.(*ast.CallExpr)
-			if !ok {
-				return true
-			}
-			var checkArgs []int
-			for matcher, args := range takesPath {
-				if matcher.Matches(pass, call) {
-					checkArgs = args
-					fmt.Println("matches tekes path")
+	s, ok := pass.ResultOf[buildssa.Analyzer].(*buildssa.SSA)
+	if !ok {
+		return nil, errors.Errorf("failed to get SSA")
+	}
+	for _, fn := range s.SrcFuncs {
+		pls := pathLikes(fn)
+		inspect(pass, fn, pls)
+	}
+	return nil, nil
+}
+
+func pathLikes(fn *ssa.Function) utils.Set[string] {
+	explicitPathLikes := utils.NewSet[string]()
+	g := graph.NewDirected[string]()
+	utils.EachInstr(fn, func(instr ssa.Instruction) {
+		switch instr := instr.(type) {
+		case ssa.CallInstruction:
+			cmn := instr.Common()
+			for _, matcher := range pathLikeMatchers {
+				if matcher.MatchesSSA(cmn) {
+					explicitPathLikes.Add(instr.Value().Name())
 					break
 				}
 			}
-			if len(checkArgs) == 0 {
-				return true
+		case *ssa.Phi:
+			for _, e := range instr.Edges {
+				g.AddEdge(instr.Name(), e.Name())
 			}
-			for _, argPos := range checkArgs {
-				arg := call.Args[argPos]
-				call, ok := arg.(*ast.CallExpr)
-				if !ok {
-					continue
-				}
-				for _, matcher := range pathLikeMatchers {
-					if matcher.Matches(pass, call) {
-						pass.ReportRangef(arg, "should use filepath instead of path")
+		}
+	})
+	return g.LookupBackward(explicitPathLikes.ToSlice()...)
+}
+
+func inspect(pass *analysis.Pass, fn *ssa.Function, pathLikes utils.Set[string]) {
+	utils.EachInstr(fn, func(instr ssa.Instruction) {
+		switch instr := instr.(type) {
+		case ssa.CallInstruction:
+			cmn := instr.Common()
+			for matcher, idx := range takesPath {
+				if matcher.MatchesSSA(cmn) {
+					for _, i := range idx {
+						if i >= len(cmn.Args) {
+							continue
+						}
+						if pathLikes.Has(cmn.Args[i].Name()) {
+							pass.Reportf(
+								cmn.Pos(),
+								`path built by package "path" isn't suitable for file path manipulation because it doesn't handle Windows paths correctly. Use "path/filepath" instead.`,
+							)
+							break
+						}
 					}
+					break
 				}
 			}
-			return true
-		})
-	}
-	return nil, nil
+		}
+	})
 }
 
 var pfm func(string, string) utils.PkgFuncCallMatcher = utils.NewPkgFuncCallMatcher

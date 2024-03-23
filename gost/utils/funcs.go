@@ -5,10 +5,12 @@ import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/ssa"
 )
 
 type CallMatcher interface {
 	Matches(*analysis.Pass, *ast.CallExpr) bool
+	MatchesSSA(*ssa.CallCommon) bool
 }
 
 type PkgFuncCallMatcher struct {
@@ -43,4 +45,15 @@ func (m PkgFuncCallMatcher) Matches(pass *analysis.Pass, call *ast.CallExpr) boo
 		return false
 	}
 	return p.Imported().Path() == m.PkgPath
+}
+
+func (m PkgFuncCallMatcher) MatchesSSA(common *ssa.CallCommon) bool {
+	fn := common.StaticCallee()
+	if fn == nil {
+		return false
+	}
+	if fn.Pkg == nil {
+		return false
+	}
+	return fn.Pkg.Pkg.Path() == m.PkgPath && fn.Name() == m.FuncName
 }
