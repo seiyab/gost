@@ -12,7 +12,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "closecloser",
+	Name: "closeCloser",
 	Doc:  "report unclosed variables that implement io.Closer",
 	Run:  run,
 }
