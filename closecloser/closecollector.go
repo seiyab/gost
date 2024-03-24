@@ -11,22 +11,23 @@ import (
 )
 
 type closeCollector struct {
-	pass  *analysis.Pass
-	calls map[types.Object]struct{}
+	pass      *analysis.Pass
+	calls     map[types.Object]struct{}
+	inspector *inspector.Inspector
 }
 
-func newCloseCollector(pass *analysis.Pass) *closeCollector {
+func newCloseCollector(pass *analysis.Pass, ipr *inspector.Inspector) *closeCollector {
 	c := &closeCollector{
-		pass:  pass,
-		calls: make(map[types.Object]struct{}),
+		pass:      pass,
+		calls:     make(map[types.Object]struct{}),
+		inspector: ipr,
 	}
 	c.trace()
 	return c
 }
 
 func (c *closeCollector) trace() {
-	ipr := inspector.New(c.pass.Files)
-	ipr.WithStack(
+	c.inspector.WithStack(
 		[]ast.Node{
 			&ast.CallExpr{},
 			&ast.CompositeLit{},

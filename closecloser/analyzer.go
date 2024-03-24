@@ -9,6 +9,7 @@ import (
 	"github.com/seiyab/gost/astpath"
 	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/ast/inspector"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -19,7 +20,8 @@ var Analyzer = &analysis.Analyzer{
 
 func run(pass *analysis.Pass) (any, error) {
 	ti := pass.TypesInfo
-	c := newCloseCollector(pass)
+	ipr := inspector.New(pass.Files)
+	c := newCloseCollector(pass, ipr)
 
 	for _, file := range pass.Files {
 		ast.Inspect(file, astpath.WithPath(func(n ast.Node, path *astpath.Path) bool {
