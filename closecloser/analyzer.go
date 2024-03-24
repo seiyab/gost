@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"strings"
 
 	"github.com/seiyab/gost/astpath"
 	"github.com/seiyab/gost/utils"
@@ -24,6 +25,10 @@ func run(pass *analysis.Pass) (any, error) {
 		ast.Inspect(file, astpath.WithPath(func(n ast.Node, path *astpath.Path) bool {
 			var ids []*ast.Ident
 			switch n := n.(type) {
+			case *ast.FuncDecl:
+				if strings.HasPrefix(n.Name.Name, "Test") {
+					return false
+				}
 			case *ast.AssignStmt:
 				if n.Tok != token.DEFINE {
 					return true
