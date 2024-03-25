@@ -6,7 +6,6 @@ import (
 	"go/types"
 	"strings"
 
-	"github.com/seiyab/gost/astpath"
 	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/ast/inspector"
@@ -23,8 +22,15 @@ func run(pass *analysis.Pass) (any, error) {
 	ipr := inspector.New(pass.Files)
 	c := newCloseCollector(pass, ipr)
 
-	for _, file := range pass.Files {
-		ast.Inspect(file, astpath.WithPath(func(n ast.Node, path *astpath.Path) bool {
+	ipr.Nodes([]ast.Node{
+		(*ast.FuncDecl)(nil),
+		(*ast.AssignStmt)(nil),
+		(*ast.ValueSpec)(nil),
+	},
+		func(n ast.Node, push bool) bool {
+			if !push {
+				return true
+			}
 			var ids []*ast.Ident
 			switch n := n.(type) {
 			case *ast.FuncDecl:
@@ -65,8 +71,8 @@ func run(pass *analysis.Pass) (any, error) {
 			}
 
 			return true
-		}))
-	}
+		},
+	)
 	return nil, nil
 }
 
