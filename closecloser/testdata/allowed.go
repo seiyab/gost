@@ -14,7 +14,9 @@ func _() {
 	p2, _ := cmd.StdoutPipe()
 	p3, _ := cmd.StderrPipe()
 
-	markAsUsed(p1, p2, p3)
+	p1.Write(nil)
+	p2.Read(nil)
+	p3.Read(nil)
 }
 
 func _() {
@@ -24,7 +26,9 @@ func _() {
 	p2, _ := cmd.StdoutPipe()
 	p3, _ := cmd.StderrPipe()
 
-	markAsUsed(p1, p2, p3)
+	p1.Write(nil)
+	p2.Read(nil)
+	p3.Read(nil)
 }
 
 type o struct {
@@ -34,16 +38,18 @@ type o struct {
 func (o o) alias() {
 	// just define shorthands. no need to close
 	wc := o.wc
+	wc.Write(nil)
+
 	f, _ := o.wc.(*os.File)
-	markAsUsed(wc, f)
+	f.Stat()
 }
 
 func _() {
 	var o o
-	markAsUsed(o, o.alias)
+	o.alias()
 }
 
 func _(f fs.File) {
 	ff, _ := f.(fs.ReadDirFile)
-	markAsUsed(ff)
+	ff.Read(nil)
 }
