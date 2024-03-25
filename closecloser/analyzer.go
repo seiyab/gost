@@ -23,9 +23,9 @@ func run(pass *analysis.Pass) (any, error) {
 	c := newCloseCollector(pass, ipr)
 
 	ipr.Nodes([]ast.Node{
-		(*ast.FuncDecl)(nil),
-		(*ast.AssignStmt)(nil),
-		(*ast.ValueSpec)(nil),
+		&ast.FuncDecl{},
+		&ast.AssignStmt{},
+		&ast.ValueSpec{},
 	},
 		func(n ast.Node, push bool) bool {
 			if !push {
