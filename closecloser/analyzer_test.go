@@ -8,7 +8,7 @@ import (
 	"github.com/seiyab/gost/closecloser"
 )
 
-func TestOpenFileFlag(t *testing.T) {
+func TestCloseCloser(t *testing.T) {
 	testdata := analysistest.TestData()
 	analysistest.Run(t, testdata, closecloser.Analyzer)
 }
