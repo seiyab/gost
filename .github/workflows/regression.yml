@@ -9,6 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+    strategy:
+      matrix:
+        targets:
+          - https://github.com/cli/cli.git
+          - https://github.com/anchore/grype.git
+          - https://github.com/gin-gonic/gin.git
+          - https://github.com/reviewdog/reviewdog.git
     steps:
       - uses: actions/checkout@v3
 
@@ -23,22 +30,7 @@ jobs:
       - name: Setup gorcerer
         run: go install -v github.com/seiyab/gorcerer@latest
 
-      - name: Inspect Github CLI
+      - name: Inspect
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gorcerer job "inspect https://github.com/cli/cli.git" --repository gost --issue "${{ github.event.pull_request.number }}"
-
-      - name: Inspect grype
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gorcerer job "inspect https://github.com/anchore/grype.git" --repository gost --issue --issue "${{ github.event.pull_request.number }}"
-
-      - name: Inspect Gin
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gorcerer job "inspect https://github.com/gin-gonic/gin.git" --repository gost --issue --issue "${{ github.event.pull_request.number }}"
-
-      - name: Inspect Reviewdog
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gorcerer job "inspect https://github.com/reviewdog/reviewdog.git" --repository gost --issue --issue "${{ github.event.pull_request.number }}"
+        run: gorcerer job "inspect ${{ matrix.target }}" --repository gost --issue "${{ github.event.pull_request.number }}"
