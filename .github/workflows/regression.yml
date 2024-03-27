@@ -11,7 +11,7 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        targets:
+        target:
           - https://github.com/cli/cli.git
           - https://github.com/anchore/grype.git
           - https://github.com/gin-gonic/gin.git
