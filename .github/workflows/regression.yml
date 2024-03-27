@@ -8,7 +8,7 @@ jobs:
   regression:
     runs-on: ubuntu-latest
     permissions:
-      issues: write
+      pull_requests: write
     steps:
       - uses: actions/checkout@v3
 
