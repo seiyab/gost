@@ -19,7 +19,7 @@ jobs:
         run: go install -v .
 
       - name: Setup gorcerer
-        run: go install -v github.com/seiyab/gorcerer
+        run: go install -v github.com/seiyab/gorcerer@latest
 
       - name: Inspect Github CLI
         run: gorcerer job "inspect https://github.com/cli/cli.git" --repository gost --issue --issue "${{ github.event.pull_request.number }}"
