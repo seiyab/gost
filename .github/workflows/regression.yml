@@ -22,7 +22,11 @@ jobs:
         run: go install -v github.com/seiyab/gorcerer@latest
 
       - name: Inspect Github CLI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gorcerer job "inspect https://github.com/cli/cli.git" --repository gost --issue "${{ github.event.pull_request.number }}"
 
       - name: Inspect grype
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gorcerer job "inspect https://github.com/anchore/grype.git" --repository gost --issue --issue "${{ github.event.pull_request.number }}"
