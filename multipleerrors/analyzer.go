@@ -10,7 +10,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "multipleerrors",
+	Name: "multipleErrors",
 	Doc:  "detects senseless / uncommon use of error concatenations",
 	Run:  run,
 }

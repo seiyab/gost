@@ -10,7 +10,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "nodiscarderror",
+	Name: "noDiscardError",
 	Doc:  "prevents `if err != nil { return nil }`",
 	Run:  run,
 }
