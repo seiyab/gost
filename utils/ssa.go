@@ -19,7 +19,7 @@ func TryEachInstr(fn *ssa.Function, visitor func(ssa.Instruction) error) error {
 		}
 		visited.Add(b)
 		if err := visit(b); err != nil {
-			return nil
+			return err
 		}
 		for _, instr := range b.Instrs {
 			if err := visitor(instr); err != nil {
