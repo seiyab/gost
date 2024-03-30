@@ -1,7 +1,6 @@
 package preferfilepath
 
 import (
-	"github.com/pkg/errors"
 	"github.com/seiyab/gost/utils"
 	"github.com/seiyab/gost/utils/graph"
 	"golang.org/x/tools/go/analysis"
@@ -19,7 +18,7 @@ var Analyzer = &analysis.Analyzer{
 func run(pass *analysis.Pass) (any, error) {
 	s, ok := pass.ResultOf[buildssa.Analyzer].(*buildssa.SSA)
 	if !ok {
-		return nil, errors.Errorf("failed to get SSA")
+		return nil, nil
 	}
 	for _, fn := range s.SrcFuncs {
 		pls := pathLikes(fn)
