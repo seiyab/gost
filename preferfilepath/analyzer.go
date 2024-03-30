@@ -10,7 +10,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name:     "preferfilepath",
+	Name:     "preferFilepath",
 	Doc:      "warn when using path where path/filepath should be suitable",
 	Run:      run,
 	Requires: []*analysis.Analyzer{buildssa.Analyzer},

@@ -9,7 +9,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "openfileflag",
+	Name: "openFileFlag",
 	Doc:  "prevents forgetting to specify O_TRUNC / O_APPEND / O_EXCL flags",
 	Run:  run,
 }

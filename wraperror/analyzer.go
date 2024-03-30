@@ -8,7 +8,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "wraperror",
+	Name: "wrapError",
 	Doc:  "detects senseless error wrapping",
 	Run:  run,
 }

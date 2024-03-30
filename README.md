@@ -1,13 +1,16 @@
 # :ghost: gost
 
-gost is a toy project where I
+gost is a static checker for Golang. It contains aggressive rules that aren't afraid false-positive as long as diagnostics are informative.
 
-- experimentally implement static code checkers for Golang
-- try the checkers into popular projects to find possible false-positives, insights and bugs
+# Installation
 
-## Usage
+I recommend to use gost via [reviewdog](https://github.com/reviewdog/reviewdog).
+Complete example configuration:
 
-NOTE: It's just note for myself. This is an experimental project so I don't recommend to utilize it.
+- [.reviewdog.yml](./reviewdog.yml)
+- [.github/workflows/reviewdog.yml](./.github/workflows/reviewdog.yml)
+
+To run it locally, run following:
 
 ```sh
 # install
@@ -16,3 +19,14 @@ go install github.com/seiyab/gost@latest
 # run
 go vet -vettool="$(which gost)" ./...
 ```
+
+# Analyzers
+
+| name           | description                                                                  | practical discovery                             |
+| :------------- | :--------------------------------------------------------------------------- | :---------------------------------------------- |
+| closeCloser    | report that closer isn't closed                                              |                                                 |
+| multipleErrors | report suspicious error concatenation                                        | https://github.com/opentofu/opentofu/issues/539 |
+| noDiscardError | report that error is discarded                                               | https://github.com/cli/cli/issues/8026          |
+| openFileFlag   | report suspicious combination of flags in `os.OpenFile()`                    | https://github.com/anchore/go-logger/pull/13    |
+| preferFilepath | report misuse of `"path"` package where `"path/filepath"` should be suitable | https://github.com/anchore/grype/pull/1767      |
+| wrapError      | report senseless error wrapping                                              |                                                 |
