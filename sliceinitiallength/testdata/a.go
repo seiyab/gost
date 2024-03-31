@@ -29,3 +29,28 @@ func _() {
 	}
 	fmt.Println(a)
 }
+
+func _() {
+	xs := []int{1, 2, 3}
+	ys := make([]int, len(xs))
+	copy(ys, xs)
+	for i := 0; i < 10; i++ {
+		ys = append(ys, i)
+	}
+	fmt.Println(ys)
+}
+
+func _() {
+	xs := []string{"a", "b", "c"}
+	ys := make([]int, len(xs))
+	zs := make([]int, len(xs)) // want ".+"
+	for i, x := range xs {
+		ys[i] = len(x)
+		zs = append(zs, len(x))
+	}
+	for i := 0; i < 10; i++ {
+		ys = append(ys, i)
+		zs = append(zs, i)
+	}
+	fmt.Println(ys)
+}
