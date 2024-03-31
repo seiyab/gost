@@ -6,6 +6,7 @@ import (
 	"github.com/seiyab/gost/nodiscarderror"
 	"github.com/seiyab/gost/openfileflag"
 	"github.com/seiyab/gost/preferfilepath"
+	"github.com/seiyab/gost/sliceinitiallength"
 	"github.com/seiyab/gost/wraperror"
 	"golang.org/x/tools/go/analysis/multichecker"
 )
@@ -18,5 +19,6 @@ func main() {
 		wraperror.Analyzer,
 		closecloser.Analyzer,
 		preferfilepath.Analyzer,
+		sliceinitiallength.Analyzer,
 	)
 }
