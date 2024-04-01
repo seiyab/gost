@@ -8,7 +8,7 @@ import (
 	"github.com/seiyab/gost/preferfilepath"
 )
 
-func TestOpenFileFlag(t *testing.T) {
+func TestPreferFilepath(t *testing.T) {
 	testdata := analysistest.TestData()
 	analysistest.Run(t, testdata, preferfilepath.Analyzer)
 }

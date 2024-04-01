@@ -22,11 +22,12 @@ go vet -vettool="$(which gost)" ./...
 
 # Analyzers
 
-| name           | description                                                                  | practical discovery                             |
-| :------------- | :--------------------------------------------------------------------------- | :---------------------------------------------- |
-| closeCloser    | report that closer isn't closed                                              |                                                 |
-| multipleErrors | report suspicious error concatenation                                        | https://github.com/opentofu/opentofu/issues/539 |
-| noDiscardError | report that error is discarded                                               | https://github.com/cli/cli/issues/8026          |
-| openFileFlag   | report suspicious combination of flags in `os.OpenFile()`                    | https://github.com/anchore/go-logger/pull/13    |
-| preferFilepath | report misuse of `"path"` package where `"path/filepath"` should be suitable | https://github.com/anchore/grype/pull/1767      |
-| wrapError      | report senseless error wrapping                                              |                                                 |
+| name               | description                                                                  | practical discovery                             | inspired by                                     |
+| :----------------- | :--------------------------------------------------------------------------- | :---------------------------------------------- | :---------------------------------------------- |
+| closeCloser        | report that closer isn't closed                                              |                                                 |                                                 |
+| multipleErrors     | report suspicious error concatenation                                        | https://github.com/opentofu/opentofu/issues/539 |                                                 |
+| noDiscardError     | report that error is discarded                                               | https://github.com/cli/cli/issues/8026          |                                                 |
+| openFileFlag       | report suspicious combination of flags in `os.OpenFile()`                    | https://github.com/anchore/go-logger/pull/13    |                                                 |
+| preferFilepath     | report misuse of `"path"` package where `"path/filepath"` should be suitable | https://github.com/anchore/grype/pull/1767      |                                                 |
+| sliceInitialLength | reports confusion between slice length and capacity                          |                                                 | https://github.com/dominikh/go-tools/issues/112 |
+| wrapError          | report senseless error wrapping                                              |                                                 |                                                 |

@@ -57,3 +57,25 @@ func (m PkgFuncCallMatcher) MatchesSSA(common *ssa.CallCommon) bool {
 	}
 	return fn.Pkg.Pkg.Path() == m.PkgPath && fn.Name() == m.FuncName
 }
+
+type BuiltinFuncCallMatcher struct {
+	FuncName string
+}
+
+var _ CallMatcher = BuiltinFuncCallMatcher{}
+
+func NewBuiltinFuncCallMatcher(funcName string) BuiltinFuncCallMatcher {
+	return BuiltinFuncCallMatcher{FuncName: funcName}
+}
+
+func (m BuiltinFuncCallMatcher) Matches(pass *analysis.Pass, call *ast.CallExpr) bool {
+	ident, ok := call.Fun.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	return ident.Name == m.FuncName
+}
+
+func (m BuiltinFuncCallMatcher) MatchesSSA(common *ssa.CallCommon) bool {
+	return common.Value.String() == m.FuncName
+}
