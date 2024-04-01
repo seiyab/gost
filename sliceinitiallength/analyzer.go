@@ -61,7 +61,7 @@ func run(pass *analysis.Pass) (any, error) {
 				pass.Reportf(
 					call.Pos(),
 					fmt.Sprintf(
-						"Slice `%s` is appended to, so typically it should be created with an initial length of 0. Did you mean to use `make([]T, 0, cap)?`",
+						"Slice `%s` is appended to, typically it should be created with an initial length of 0. Did you mean to use `make([]T, 0, cap)?`",
 						ident.Name,
 					),
 				)
