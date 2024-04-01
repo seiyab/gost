@@ -90,8 +90,8 @@ func visitAssign(n *ast.AssignStmt, pass *analysis.Pass) map[types.Object]mutati
 			continue
 		}
 
-		if sel, ok := lhs.(*ast.SelectorExpr); ok {
-			if ident, ok := sel.X.(*ast.Ident); ok {
+		if idx, ok := lhs.(*ast.IndexExpr); ok {
+			if ident, ok := idx.X.(*ast.Ident); ok {
 				t := pass.TypesInfo.TypeOf(ident)
 				if t == nil {
 					continue
