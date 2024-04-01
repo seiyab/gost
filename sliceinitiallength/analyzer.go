@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/token"
 
+	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -46,11 +47,7 @@ func run(pass *analysis.Pass) (any, error) {
 				if !ok {
 					continue
 				}
-				fn, ok := call.Fun.(*ast.Ident)
-				if !ok {
-					continue
-				}
-				if fn.Name != "make" {
+				if !makeMatcher.Matches(pass, call) {
 					continue
 				}
 				if len(call.Args) != 2 {
@@ -74,3 +71,7 @@ func run(pass *analysis.Pass) (any, error) {
 	}
 	return nil, nil
 }
+
+var (
+	makeMatcher = utils.NewBuiltinFuncCallMatcher("make")
+)

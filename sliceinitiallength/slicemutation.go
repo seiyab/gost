@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/types"
 
+	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -12,6 +13,7 @@ type mutation int
 const (
 	appended mutation = iota + 1
 	assigned
+	copied
 	mixed
 )
 
@@ -32,10 +34,28 @@ func collectSliceMutations(pass *analysis.Pass) map[types.Object]mutation {
 						}
 					}
 				}
-				return true
-			default:
-				return true
+			case *ast.CallExpr:
+				if copyMatcher.Matches(pass, n) {
+					dst := n.Args[0]
+					id, ok := dst.(*ast.Ident)
+					if !ok {
+						break
+					}
+					obj := pass.TypesInfo.ObjectOf(id)
+					if obj == nil {
+						break
+					}
+					m, ok := muts[obj]
+					if !ok {
+						muts[obj] = copied
+					} else {
+						if m != copied {
+							muts[obj] = mixed
+						}
+					}
+				}
 			}
+			return true
 		})
 	}
 	return muts
@@ -63,11 +83,7 @@ func visitAssign(n *ast.AssignStmt, pass *analysis.Pass) map[types.Object]mutati
 			if !ok {
 				continue
 			}
-			fn, ok := call.Fun.(*ast.Ident)
-			if !ok {
-				continue
-			}
-			if fn.Name != "append" {
+			if !appendMatcher.Matches(pass, call) {
 				continue
 			}
 			muts[o] = appended
@@ -94,3 +110,8 @@ func visitAssign(n *ast.AssignStmt, pass *analysis.Pass) map[types.Object]mutati
 	}
 	return muts
 }
+
+var (
+	appendMatcher = utils.NewBuiltinFuncCallMatcher("append")
+	copyMatcher   = utils.NewBuiltinFuncCallMatcher("copy")
+)
