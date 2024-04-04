@@ -7,7 +7,7 @@ gost is a static checker for Golang. It contains aggressive rules that aren't af
 I recommend to use gost via [reviewdog](https://github.com/reviewdog/reviewdog).
 Complete example configuration:
 
-- [.reviewdog.yml](./reviewdog.yml)
+- [.reviewdog.yml](./.reviewdog.yml)
 - [.github/workflows/reviewdog.yml](./.github/workflows/reviewdog.yml)
 
 To run it locally, run following:
