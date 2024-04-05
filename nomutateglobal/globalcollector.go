@@ -10,38 +10,50 @@ import (
 type key types.Object
 
 type globalCollector struct {
-	collection map[key]struct{}
+	pass            *analysis.Pass
+	identCollection map[key]struct{}
+	fieldCollection fieldSet
 }
 
-func newGlobalCollector() globalCollector {
+func newGlobalCollector(pass *analysis.Pass) globalCollector {
 	return globalCollector{
-		collection: make(map[key]struct{}),
+		pass:            pass,
+		identCollection: make(map[key]struct{}),
+		fieldCollection: newFieldSet(pass),
 	}
 }
 
-func (c *globalCollector) visitAssignment(asmt *ast.AssignStmt, pass *analysis.Pass) {
+func (c *globalCollector) visitAssignment(asmt *ast.AssignStmt) {
 	for i, rhs := range asmt.Rhs {
-		if !isGlobalVar(rhs, pass) {
+		if !isGlobalVar(rhs, c.pass) {
 			continue
 		}
 		lhs := asmt.Lhs[i]
-		idt, ok := lhs.(*ast.Ident)
-		if !ok {
-			continue
+		switch lhs := lhs.(type) {
+		case *ast.Ident:
+			o := c.pass.TypesInfo.ObjectOf(lhs)
+			if o == nil {
+				continue
+			}
+			c.identCollection[key(o)] = struct{}{}
+		case *ast.SelectorExpr:
+			c.fieldCollection.add(lhs)
 		}
-		o := pass.TypesInfo.ObjectOf(idt)
-		if o == nil {
-			continue
-		}
-		c.add(o)
 	}
 }
 
-func (c *globalCollector) add(o types.Object) {
-	c.collection[key(o)] = struct{}{}
-}
-
-func (c *globalCollector) contains(o types.Object) bool {
-	_, ok := c.collection[key(o)]
-	return ok
+func (c *globalCollector) contains(expr ast.Expr) bool {
+	switch expr := expr.(type) {
+	case *ast.Ident:
+		o := c.pass.TypesInfo.ObjectOf(expr)
+		if o == nil {
+			return false
+		}
+		_, ok := c.identCollection[key(o)]
+		return ok
+	case *ast.SelectorExpr:
+		return c.fieldCollection.has(expr)
+	default:
+		return false
+	}
 }

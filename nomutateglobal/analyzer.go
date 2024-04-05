@@ -14,7 +14,7 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	c := newGlobalCollector()
+	c := newGlobalCollector(pass)
 	for _, f := range pass.Files {
 		ast.Inspect(f, func(n ast.Node) bool {
 			asmt, ok := n.(*ast.AssignStmt)
@@ -26,20 +26,15 @@ func run(pass *analysis.Pass) (any, error) {
 				if !ok {
 					continue
 				}
-				idx, ok := sel.X.(*ast.Ident)
-				if !ok {
+				if !c.contains(sel.X) {
 					continue
 				}
-				o := pass.TypesInfo.ObjectOf(idx)
-				if o == nil {
-					continue
-				}
-				if !c.contains(o) {
-					continue
-				}
-				pass.Reportf(asmt.Pos(), "This assignment might mutate a global variable. %q can be a pointer to a global variable.", idx.Name)
+				pass.Reportf(
+					asmt.Pos(),
+					"This assignment might mutate a global variable. Lhs can be a pointer to a global variable.",
+				)
 			}
-			c.visitAssignment(asmt, pass)
+			c.visitAssignment(asmt)
 			return true
 		})
 	}
