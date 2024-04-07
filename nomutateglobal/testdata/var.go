@@ -2,6 +2,7 @@ package testdata
 
 import (
 	"flag"
+	"net"
 	"net/http"
 )
 
@@ -12,6 +13,9 @@ var MyGlobal *struct {
 func _() {
 	client := http.DefaultClient
 	client.Transport = nil // want ".+"
+
+	resolver := net.DefaultResolver
+	resolver.PreferGo = true // want ".+"
 
 	x := MyGlobal
 	x.Field = "foo"
