@@ -25,7 +25,7 @@ func newGlobalCollector(pass *analysis.Pass) globalCollector {
 
 func (c *globalCollector) visitAssignment(asmt *ast.AssignStmt) {
 	for i, rhs := range asmt.Rhs {
-		if !isGlobalVar(rhs, c.pass) {
+		if !isGlobalPointer(rhs, c.pass) {
 			continue
 		}
 		lhs := asmt.Lhs[i]

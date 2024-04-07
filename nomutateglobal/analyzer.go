@@ -41,7 +41,14 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-func isGlobalVar(expr ast.Expr, pass *analysis.Pass) bool {
+func isGlobalPointer(expr ast.Expr, pass *analysis.Pass) bool {
+	t := pass.TypesInfo.TypeOf(expr)
+	if t == nil {
+		return false
+	}
+	if _, ok := t.Underlying().(*types.Pointer); !ok {
+		return false
+	}
 	sel, ok := expr.(*ast.SelectorExpr)
 	if !ok {
 		return false
