@@ -57,6 +57,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if len(retTypes) != len(ret.Results) {
 				return true
 			}
+			var numErrorReturns, numDiscardedErrorReturns int
 			for i, result := range ret.Results {
 				if !utils.IsError(ti.TypeOf(retTypes[i].Type)) {
 					continue
@@ -65,10 +66,13 @@ func run(pass *analysis.Pass) (any, error) {
 				if !ok {
 					continue
 				}
+				numErrorReturns++
 				if res.IsNil() {
-					pass.Reportf(ret.Pos(), "error is discarded")
-					return true
+					numDiscardedErrorReturns++
 				}
+			}
+			if numErrorReturns > 0 && numErrorReturns == numDiscardedErrorReturns {
+				pass.Reportf(ret.Pos(), "error is discarded")
 			}
 			return true
 		}))
