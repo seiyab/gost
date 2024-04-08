@@ -4,6 +4,7 @@ import (
 	"github.com/seiyab/gost/closecloser"
 	"github.com/seiyab/gost/multipleerrors"
 	"github.com/seiyab/gost/nodiscarderror"
+	"github.com/seiyab/gost/nomutateglobal"
 	"github.com/seiyab/gost/openfileflag"
 	"github.com/seiyab/gost/preferfilepath"
 	"github.com/seiyab/gost/sliceinitiallength"
@@ -15,6 +16,7 @@ func main() {
 	multichecker.Main(
 		openfileflag.Analyzer,
 		nodiscarderror.Analyzer,
+		nomutateglobal.Analyzer,
 		multipleerrors.Analyzer,
 		wraperror.Analyzer,
 		closecloser.Analyzer,
