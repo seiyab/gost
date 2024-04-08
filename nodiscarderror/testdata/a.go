@@ -58,3 +58,11 @@ func _() {
 	}
 	return
 }
+
+func _() *int {
+	var err error
+	if err != nil {
+		return nil
+	}
+	return nil
+}
