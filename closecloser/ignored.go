@@ -38,6 +38,11 @@ func isAllowedMethodCall(call *ast.CallExpr, pass *analysis.Pass) bool {
 	if ty == nil {
 		return false
 	}
+
+	if implementsCloser(ty) {
+		return true
+	}
+
 	pt, ok := ty.(*types.Pointer)
 	if ok {
 		ty = pt.Elem()
