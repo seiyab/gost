@@ -20,7 +20,7 @@ func A() {
 	c1.Read(nil)
 
 	var a io.WriteCloser // want ".+"
-	a.Write(nil)
+	a.Write(([]byte)("foobar"))
 }
 
 func Shadow(b bool) {
