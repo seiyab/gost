@@ -3,6 +3,7 @@ package urlstring
 import (
 	"go/ast"
 	"go/token"
+	"strings"
 
 	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
@@ -16,6 +17,9 @@ var Analyzer = &analysis.Analyzer{
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, f := range pass.Files {
+		if f.Name != nil && strings.HasSuffix(f.Name.Name, "_test") {
+			continue
+		}
 		ast.Inspect(f, func(n ast.Node) bool {
 			switch n := n.(type) {
 			case *ast.CallExpr:
