@@ -32,5 +32,5 @@ go vet -vettool="$(which gost)" ./...
 | openFileFlag | report suspicious combination of flags in `os.OpenFile()` | https://github.com/anchore/go-logger/pull/13 | |
 | preferFilepath | report misuse of `"path"` package where `"path/filepath"` should be suitable | https://github.com/anchore/grype/pull/1767 | |
 | sliceInitialLength | reports confusion between slice length and capacity | https://github.com/beego/beego/pull/5631 | https://github.com/dominikh/go-tools/issues/112 |
-| [urlString](./docs/rules/urlString.md) | urlString reports unsafe construction of URL-like string. | | |
+| [urlString](./docs/rules/urlString.md) | urlString reports unsafe construction of URL-like string. | | https://github.com/dominikh/go-tools/issues/730 |
 | wrapError | report senseless error wrapping | | |
