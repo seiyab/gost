@@ -15,6 +15,8 @@ func shouldAllowUnclosed(expr ast.Expr, pass *analysis.Pass) bool {
 		return isAllowedCall(expr, pass)
 	case *ast.TypeAssertExpr:
 		return shouldAllowUnclosed(expr.X, pass)
+	case *ast.IndexExpr:
+		return true
 	}
 	return false
 }
