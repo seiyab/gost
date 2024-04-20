@@ -20,7 +20,9 @@ func shouldAllowUnclosed(expr ast.Expr, pass *analysis.Pass) bool {
 }
 
 func isAllowedCall(call *ast.CallExpr, pass *analysis.Pass) bool {
-	if isAllowedMethodCall(call, pass) {
+	if isMethodCall(call, pass) {
+		// closer returned by method call is allowed.
+		// its lifecycle might be managed by the receiver.
 		return true
 	}
 	if isAllowedFuncCall(call, pass) {
@@ -29,40 +31,22 @@ func isAllowedCall(call *ast.CallExpr, pass *analysis.Pass) bool {
 	return false
 }
 
-func isAllowedMethodCall(call *ast.CallExpr, pass *analysis.Pass) bool {
+func isMethodCall(call *ast.CallExpr, pass *analysis.Pass) bool {
 	fun, ok := call.Fun.(*ast.SelectorExpr)
 	if !ok {
 		return false
 	}
-	ty := pass.TypesInfo.TypeOf(fun.X)
+	ident, ok := fun.X.(*ast.Ident)
+	if !ok {
+		return true
+	}
+	ty := pass.TypesInfo.ObjectOf(ident)
 	if ty == nil {
 		return false
 	}
 
-	if implementsCloser(ty) {
-		return true
-	}
-
-	pt, ok := ty.(*types.Pointer)
-	if ok {
-		ty = pt.Elem()
-	}
-
-	nt, ok := ty.(*types.Named)
-	if !ok {
-		return false
-	}
-	obj := nt.Obj()
-	if obj.Pkg() == nil {
-		return false
-	}
-	m := method{
-		pkg:  obj.Pkg().Path(),
-		typ:  nt.Obj().Name(),
-		name: fun.Sel.Name,
-	}
-	_, ok = allowedMethods[m]
-	return ok
+	_, ok = ty.(*types.PkgName)
+	return !ok
 }
 
 func isAllowedFuncCall(call *ast.CallExpr, pass *analysis.Pass) bool {
@@ -84,18 +68,6 @@ func isAllowedFuncCall(call *ast.CallExpr, pass *analysis.Pass) bool {
 	}
 	_, ok = allowedFuns[f]
 	return ok
-}
-
-var allowedMethods = map[method]struct{}{
-	{"os/exec", "Cmd", "StdinPipe"}:  {},
-	{"os/exec", "Cmd", "StdoutPipe"}: {},
-	{"os/exec", "Cmd", "StderrPipe"}: {},
-}
-
-type method struct {
-	pkg  string
-	typ  string
-	name string
 }
 
 var allowedFuns = map[fun]struct{}{}

@@ -1,4 +1,4 @@
-package testdata
+package testdata_test
 
 import (
 	"os"
