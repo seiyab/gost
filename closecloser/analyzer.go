@@ -22,7 +22,7 @@ func run(pass *analysis.Pass) (any, error) {
 	c := newCloseCollector(pass, ipr)
 
 	ipr.Nodes([]ast.Node{
-		&ast.FuncDecl{},
+		&ast.File{},
 		&ast.AssignStmt{},
 		&ast.ValueSpec{},
 	},
@@ -32,14 +32,8 @@ func run(pass *analysis.Pass) (any, error) {
 			}
 			var ids []*ast.Ident
 			switch n := n.(type) {
-			case *ast.FuncDecl:
-				// NOTE:
-				// As of now, the analyzer does not report test functions.
-				// It is because:
-				//     - resources can be implicitly closed by t.Cleanup()
-				//     - people tend to write tests that do not close resources
-				// I think it is not desirable but this is practically helpful anyway.
-				if isTestOrTestHelper(n, pass) {
+			case *ast.File:
+				if utils.IsTestRelatedFile(n) {
 					return false
 				}
 			case *ast.AssignStmt:
