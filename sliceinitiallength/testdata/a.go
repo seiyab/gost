@@ -54,3 +54,25 @@ func _() {
 	}
 	fmt.Println(ys)
 }
+
+func _() {
+	xs := []string{"a", "b", "c"}
+	ys := make([]int, len(xs))
+
+	ys = ys[:0]
+	for _, x := range xs {
+		ys = append(ys, len(x))
+	}
+	fmt.Println(ys)
+}
+
+func _() {
+	xs := []string{"a", "b", "c"}
+	ys := make([]int, len(xs))
+
+	ys = append(ys[:0], 0)
+	for _, x := range xs {
+		ys = append(ys, len(x))
+	}
+	fmt.Println(ys)
+}
