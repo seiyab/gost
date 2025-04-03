@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/types"
 
+	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -77,4 +78,26 @@ var allowedFuns = map[fun]struct{}{}
 type fun struct {
 	pkg  string
 	name string
+}
+
+func isAllowedType(ty types.Type) bool {
+	if ty == nil {
+		return false
+	}
+	if p, ok := ty.(*types.Pointer); ok {
+		return isAllowedType(p.Elem())
+	}
+	if n, ok := ty.(*types.Named); ok {
+		for _, m := range allowedTypes {
+			if m.Matches(n) {
+				return true
+			}
+		}
+		return false
+	}
+	return false
+}
+
+var allowedTypes = []utils.TypeMatcher{
+	{PkgPath: "net/http", TypeName: "Server"},
 }
