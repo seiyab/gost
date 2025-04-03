@@ -4,8 +4,9 @@ import (
 	"go/ast"
 	"go/types"
 
-	"github.com/seiyab/gost/utils"
 	"golang.org/x/tools/go/analysis"
+
+	"github.com/seiyab/gost/utils"
 )
 
 func shouldAllowUnclosed(expr ast.Expr, pass *analysis.Pass) bool {
