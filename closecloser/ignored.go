@@ -5,6 +5,8 @@ import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
+
+	"github.com/seiyab/gost/utils"
 )
 
 func shouldAllowUnclosed(expr ast.Expr, pass *analysis.Pass) bool {
@@ -77,4 +79,27 @@ var allowedFuns = map[fun]struct{}{}
 type fun struct {
 	pkg  string
 	name string
+}
+
+func isAllowedType(ty types.Type) bool {
+	if ty == nil {
+		return false
+	}
+	if p, ok := ty.(*types.Pointer); ok {
+		return isAllowedType(p.Elem())
+	}
+	n, ok := ty.(*types.Named)
+	if !ok {
+		return false
+	}
+	for _, m := range allowedTypes {
+		if m.Matches(n) {
+			return true
+		}
+	}
+	return false
+}
+
+var allowedTypes = []utils.TypeMatcher{
+	{PkgPath: "net/http", TypeName: "Server"},
 }

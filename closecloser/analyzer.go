@@ -54,8 +54,11 @@ func run(pass *analysis.Pass) (any, error) {
 				return true
 			}
 			for _, id := range ids {
-				dt := ti.TypeOf(id)
 				if id.Name == "_" {
+					continue
+				}
+				dt := ti.TypeOf(id)
+				if isAllowedType(dt) {
 					continue
 				}
 				if !implementsCloser(dt) {

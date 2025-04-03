@@ -3,6 +3,7 @@ package testdata
 import (
 	"io"
 	"io/fs"
+	"net/http"
 	"os"
 	"os/exec"
 )
@@ -52,4 +53,9 @@ func _() {
 func _(f fs.File) {
 	ff, _ := f.(fs.ReadDirFile)
 	ff.Read(nil)
+}
+
+func _() {
+	var s *http.Server
+	var _ io.Closer = s
 }
