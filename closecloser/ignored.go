@@ -88,13 +88,14 @@ func isAllowedType(ty types.Type) bool {
 	if p, ok := ty.(*types.Pointer); ok {
 		return isAllowedType(p.Elem())
 	}
-	if n, ok := ty.(*types.Named); ok {
-		for _, m := range allowedTypes {
-			if m.Matches(n) {
-				return true
-			}
-		}
+	n, ok := ty.(*types.Named)
+	if !ok {
 		return false
+	}
+	for _, m := range allowedTypes {
+		if m.Matches(n) {
+			return true
+		}
 	}
 	return false
 }

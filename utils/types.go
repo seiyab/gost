@@ -19,17 +19,18 @@ func (m TypeMatcher) Matches(t types.Type) bool {
 	if p, ok := t.(*types.Pointer); ok {
 		return m.Matches(p.Elem())
 	}
-
-	if n, ok := t.(*types.Named); ok {
-		o := n.Obj()
-		if o == nil {
-			return false
-		}
-		pkg := o.Pkg()
-		if pkg == nil {
-			return false
-		}
-		return pkg.Path() == m.PkgPath && o.Name() == m.TypeName
+	n, ok := t.(*types.Named)
+	if !ok {
+		return false
 	}
-	return false
+
+	o := n.Obj()
+	if o == nil {
+		return false
+	}
+	pkg := o.Pkg()
+	if pkg == nil {
+		return false
+	}
+	return pkg.Path() == m.PkgPath && o.Name() == m.TypeName
 }
