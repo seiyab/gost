@@ -27,7 +27,9 @@ func run(pass *analysis.Pass) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		inspect(pass, fn, pls)
+		if err := inspect(pass, fn, pls); err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
@@ -57,8 +59,8 @@ func pathLikes(fn *ssa.Function) (utils.Set[string], error) {
 	return g.LookupBackward(explicitPathLikes.ToSlice()...), nil
 }
 
-func inspect(pass *analysis.Pass, fn *ssa.Function, pathLikes utils.Set[string]) {
-	utils.EachInstr(fn, func(instr ssa.Instruction) {
+func inspect(pass *analysis.Pass, fn *ssa.Function, pathLikes utils.Set[string]) error {
+	return utils.EachInstr(fn, func(instr ssa.Instruction) {
 		switch instr := instr.(type) {
 		case ssa.CallInstruction:
 			cmn := instr.Common()
