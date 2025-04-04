@@ -2,11 +2,12 @@ package preferfilepath
 
 import (
 	"github.com/pkg/errors"
-	"github.com/seiyab/gost/utils"
-	"github.com/seiyab/gost/utils/graph"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/buildssa"
 	"golang.org/x/tools/go/ssa"
+
+	"github.com/seiyab/gost/utils"
+	"github.com/seiyab/gost/utils/graph"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -22,16 +23,21 @@ func run(pass *analysis.Pass) (any, error) {
 		return nil, errors.Errorf("failed to get SSA")
 	}
 	for _, fn := range s.SrcFuncs {
-		pls := pathLikes(fn)
-		inspect(pass, fn, pls)
+		pls, err := pathLikes(fn)
+		if err != nil {
+			return nil, err
+		}
+		if err := inspect(pass, fn, pls); err != nil {
+			return nil, err
+		}
 	}
 	return nil, nil
 }
 
-func pathLikes(fn *ssa.Function) utils.Set[string] {
+func pathLikes(fn *ssa.Function) (utils.Set[string], error) {
 	explicitPathLikes := utils.NewSet[string]()
 	g := graph.NewDirected[string]()
-	utils.EachInstr(fn, func(instr ssa.Instruction) {
+	err := utils.EachInstr(fn, func(instr ssa.Instruction) {
 		switch instr := instr.(type) {
 		case ssa.CallInstruction:
 			cmn := instr.Common()
@@ -47,11 +53,14 @@ func pathLikes(fn *ssa.Function) utils.Set[string] {
 			}
 		}
 	})
-	return g.LookupBackward(explicitPathLikes.ToSlice()...)
+	if err != nil {
+		return nil, err
+	}
+	return g.LookupBackward(explicitPathLikes.ToSlice()...), nil
 }
 
-func inspect(pass *analysis.Pass, fn *ssa.Function, pathLikes utils.Set[string]) {
-	utils.EachInstr(fn, func(instr ssa.Instruction) {
+func inspect(pass *analysis.Pass, fn *ssa.Function, pathLikes utils.Set[string]) error {
+	return utils.EachInstr(fn, func(instr ssa.Instruction) {
 		switch instr := instr.(type) {
 		case ssa.CallInstruction:
 			cmn := instr.Common()
