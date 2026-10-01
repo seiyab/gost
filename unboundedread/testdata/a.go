@@ -1,6 +1,7 @@
 package testdata
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 )
@@ -19,13 +20,13 @@ func ReadAll(req http.Request) {
 
 func CopyToBuffer(req http.Request) {
 	var b bytes.Buffer
-	io.Copy(b, req.Body) // want ".+"
+	io.Copy(&b, req.Body) // want ".+"
 
 	var s Struct1
-	io.Copy(b, s.req.Body) // want ".+"
+	io.Copy(&b, s.req.Body) // want ".+"
 
 	var r io.Reader
-	io.Copy(b, r)
+	io.Copy(&b, r)
 }
 
 func CalleeReadsAll(req http.Request) {
