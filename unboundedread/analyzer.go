@@ -81,6 +81,15 @@ func run(pass *analysis.Pass) (any, error) {
 
 func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa.Value]dependencies, map[*ssa.Call]dependencies) {
 	values := make(map[ssa.Value]dependencies)
+	// Origins retain request provenance through limits: a compressed-byte limit
+	// does not provide the same allocation bound on decompressed output.
+	origins := make(map[ssa.Value]dependencies)
+	origin := func(v ssa.Value) dependencies {
+		if origins[v] == nil {
+			origins[v] = dependencies{}
+		}
+		return origins[v]
+	}
 	get := func(v ssa.Value) dependencies {
 		if values[v] == nil {
 			values[v] = dependencies{}
@@ -89,6 +98,7 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 	}
 	for i, p := range f.Params {
 		get(p)[i] = true
+		origin(p)[i] = true
 	}
 	sinks := make(map[*ssa.Call]dependencies)
 	for changed := true; changed; {
@@ -96,6 +106,7 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 		for _, b := range f.Blocks {
 			for _, instr := range b.Instrs {
 				var inputs []ssa.Value
+				var originInputs []ssa.Value
 				switch v := instr.(type) {
 				case *ssa.FieldAddr:
 					st, ok := v.X.Type().Underlying().(*types.Pointer)
@@ -104,6 +115,7 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 						if s.Field(v.Field).Name() == "Body" {
 							d := dependencies{requestBody: true}
 							changed = merge(get(v), d) || changed
+							changed = merge(origin(v), d) || changed
 							continue
 						}
 					}
@@ -111,13 +123,16 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 				case *ssa.Field:
 					if named(v.X.Type(), "net/http", "Request") && v.X.Type().Underlying().(*types.Struct).Field(v.Field).Name() == "Body" {
 						changed = merge(get(v), dependencies{requestBody: true}) || changed
+						changed = merge(origin(v), dependencies{requestBody: true}) || changed
 						continue
 					}
 					inputs = []ssa.Value{v.X}
 				case *ssa.Store:
 					changed = merge(get(v.Addr), get(v.Val)) || changed
+					changed = merge(origin(v.Addr), origin(v.Val)) || changed
 					if index, ok := v.Addr.(*ssa.IndexAddr); ok {
 						changed = merge(get(index.X), get(v.Val)) || changed
+						changed = merge(origin(index.X), origin(v.Val)) || changed
 					}
 					continue
 				case *ssa.Call:
@@ -144,7 +159,25 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 					if function(c, "io", "MultiReader") {
 						inputs = c.Args
 					}
-					// LimitReader and other calls deliberately do not propagate provenance.
+					if function(c, "bufio", "NewReader") || function(c, "bufio", "NewReaderSize") || function(c, "io", "NopCloser") {
+						inputs = c.Args[:1]
+					}
+					if function(c, "io", "LimitReader") {
+						originInputs = c.Args[:1]
+					}
+					if function(c, "net/http", "MaxBytesReader") {
+						originInputs = c.Args[1:2]
+					}
+					if function(c, "compress/gzip", "NewReader") || function(c, "compress/zlib", "NewReader") {
+						changed = merge(get(v), origin(c.Args[0])) || changed
+						originInputs = c.Args[:1]
+					}
+				case *ssa.Extract:
+					// Reader constructors return (reader, error); only the reader
+					// carries input provenance.
+					if v.Index == 0 {
+						inputs = []ssa.Value{v.Tuple}
+					}
 				case *ssa.UnOp:
 					inputs = []ssa.Value{v.X}
 				case *ssa.MakeInterface:
@@ -165,7 +198,16 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 					inputs = []ssa.Value{v.X}
 				}
 				if value, ok := instr.(ssa.Value); ok {
+					if originInputs == nil {
+						originInputs = inputs
+					}
+					for _, input := range originInputs {
+						changed = merge(origin(value), origin(input)) || changed
+					}
 					for _, input := range inputs {
+						if wrapped, ok := value.(*ssa.MakeInterface); ok && named(wrapped.X.Type(), "io", "LimitedReader") {
+							continue
+						}
 						changed = merge(get(value), get(input)) || changed
 					}
 				}
