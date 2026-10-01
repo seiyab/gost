@@ -8,6 +8,7 @@ import (
 	"github.com/seiyab/gost/openfileflag"
 	"github.com/seiyab/gost/preferfilepath"
 	"github.com/seiyab/gost/sliceinitiallength"
+	"github.com/seiyab/gost/unboundedread"
 	"github.com/seiyab/gost/urlstring"
 	"github.com/seiyab/gost/wraperror"
 	"golang.org/x/tools/go/analysis/multichecker"
@@ -24,5 +25,6 @@ func main() {
 		preferfilepath.Analyzer,
 		sliceinitiallength.Analyzer,
 		urlstring.Analyzer,
+		unboundedread.Analyzer,
 	)
 }

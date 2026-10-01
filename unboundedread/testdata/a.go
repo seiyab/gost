@@ -60,3 +60,28 @@ func read100(r io.Reader) {
 	buf := make([]byte, 100)
 	io.ReadFull(r, buf)
 }
+
+func HelperChain(req *http.Request) {
+ drainAgain(req.Body) // want "unbounded read of HTTP request body"
+ drainAgain(io.LimitReader(req.Body, 1024))
+}
+
+func drainAgain(r io.Reader) {
+ drain(r)
+}
+
+func BoundedAndStreaming(req *http.Request) {
+ var b bytes.Buffer
+ io.Copy(&b, io.LimitReader(req.Body, 1024))
+ io.Copy(io.Discard, req.Body)
+ io.CopyN(&b, req.Body, 1024)
+ io.ReadAll(bytes.NewReader([]byte("local data")))
+}
+
+func JoinedReaders(req *http.Request, condition bool) {
+ var r io.Reader = bytes.NewReader(nil)
+ if condition {
+  r = req.Body
+ }
+ io.ReadAll(r) // want "unbounded read of HTTP request body"
+}
