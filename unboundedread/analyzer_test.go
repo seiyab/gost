@@ -8,7 +8,7 @@ import (
 	"github.com/seiyab/gost/unboundedread"
 )
 
-func TestPreferFilepath(t *testing.T) {
+func TestUnboundedRead(t *testing.T) {
 	testdata := analysistest.TestData()
 	analysistest.Run(t, testdata, unboundedread.Analyzer)
 }
