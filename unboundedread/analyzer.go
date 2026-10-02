@@ -2,6 +2,7 @@ package unboundedread
 
 import (
 	"go/types"
+	"strings"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/buildssa"
@@ -71,6 +72,9 @@ func run(pass *analysis.Pass) (any, error) {
 	for _, f := range functions {
 		_, sinks := analyze(f, summaries)
 		for call, d := range sinks {
+			if strings.HasSuffix(pass.Fset.Position(call.Pos()).Filename, "_test.go") {
+				continue
+			}
 			if d[requestBody] {
 				pass.Reportf(call.Pos(), "unbounded read of HTTP request body into memory can exhaust memory; limit the reader before reading")
 			}
