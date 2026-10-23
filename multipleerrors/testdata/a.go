@@ -20,3 +20,30 @@ func _() {
 }
 
 func markAsUsed(_ ...any) {}
+
+func reuseAfterHandling(run func() error, collected []error) error {
+	err := run()
+	if err != nil {
+		return err
+	}
+	err = errors.Join(collected...)
+	return err
+}
+
+func reuseWithExplicitArguments(run func() error, first, second error) error {
+	err := run()
+	if err != nil {
+		return err
+	}
+	err = errors.Join(first, second)
+	return err
+}
+
+func reuseAfterConditionalHandling(run func() error, terminated bool, collected []error) error {
+	err := run()
+	if err != nil && !terminated {
+		return err
+	}
+	err = errors.Join(collected...)
+	return err
+}
