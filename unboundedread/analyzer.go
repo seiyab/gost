@@ -146,6 +146,8 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 						merge(d, get(c.Args[0]))
 					} else if function(c, "io", "Copy") && len(c.Args) == 2 && buffer(c.Args[0]) {
 						merge(d, get(c.Args[1]))
+					} else if function(c, "encoding/json", "Decode") && len(c.Args) == 2 && named(c.Args[0].Type(), "encoding/json", "Decoder") {
+						merge(d, get(c.Args[0]))
 					} else if summary := summaries[c.StaticCallee()]; summary != nil {
 						for i := range summary {
 							// A helper's intrinsic source is reported inside that helper.
@@ -163,7 +165,7 @@ func analyze(f *ssa.Function, summaries map[*ssa.Function]dependencies) (map[ssa
 					if function(c, "io", "MultiReader") {
 						inputs = c.Args
 					}
-					if function(c, "bufio", "NewReader") || function(c, "bufio", "NewReaderSize") || function(c, "io", "NopCloser") {
+					if function(c, "bufio", "NewReader") || function(c, "bufio", "NewReaderSize") || function(c, "io", "NopCloser") || function(c, "encoding/json", "NewDecoder") {
 						inputs = c.Args[:1]
 					}
 					if function(c, "io", "LimitReader") {
